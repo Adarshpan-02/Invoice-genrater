@@ -1,0 +1,230 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"], textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #3e8e41;
+        }
+        #invoice-preview {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        #invoice-preview h2 {
+            color: #333;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+        }
+        #invoice-preview p {
+            margin: 5px 0;
+        }
+        #invoice-items {
+            margin-top: 10px;
+        }
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        .item-row input {
+            width: 48%;
+        }
+        .toolbar {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .toolbar button {
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Invoice Generator</h1>
+
+        <label for="invoice-number">Invoice Number:</label>
+        <input type="text" id="invoice-number" value="INV-001">
+
+        <label for="client-name">Client Name:</label>
+        <input type="text" id="client-name" value="Acme Corp">
+
+        <label for="client-address">Client Address:</label>
+        <textarea id="client-address">123 Main St\nAnytown, USA</textarea>
+
+        <label for="invoice-date">Invoice Date:</label>
+        <input type="text" id="invoice-date" value="2023-10-27">
+
+        <div id="invoice-items">
+            <label>Items:</label>
+            <div class="item-row">
+                <input type="text" class="item-description" placeholder="Description" value="Consulting Services">
+                <input type="number" class="item-price" placeholder="Price" value="100">
+            </div>
+            <div class="item-row">
+                <input type="text" class="item-description" placeholder="Description" value="Software License">
+                <input type="number" class="item-price" placeholder="Price" value="50">
+            </div>
+        </div>
+
+        <button onclick="addItem()">Add Item</button>
+
+        <label for="notes">Notes:</label>
+        <textarea id="notes">Thank you for your business!</textarea>
+
+        <div class="toolbar">
+            <button onclick="generateInvoice()">Generate Invoice</button>
+            <button onclick="editInvoice()">Edit Invoice</button>
+            <button onclick="downloadInvoice()">Download Invoice</button>
+        </div>
+
+        <div id="invoice-preview">
+            <h2>Invoice Preview</h2>
+            <p><strong>Invoice Number:</strong> <span id="preview-invoice-number">INV-001</span></p>
+            <p><strong>Client Name:</strong> <span id="preview-client-name">Acme Corp</span></p>
+            <p><strong>Client Address:</strong> <span id="preview-client-address">123 Main St\nAnytown, USA</span></p>
+            <p><strong>Invoice Date:</strong> <span id="preview-invoice-date">2023-10-27</span></p>
+            <h3>Items:</h3>
+            <div id="preview-invoice-items">
+                <p>Consulting Services - $100</p>
+                <p>Software License - $50</p>
+            </div>
+            <p><strong>Notes:</strong> <span id="preview-notes">Thank you for your business!</span></p>
+            <p><strong>Total:</strong> <span id="preview-total">$150</span></p>
+        </div>
+    </div>
+
+    <script>
+        function generateInvoice() {
+            // Get values from input fields
+            const invoiceNumber = document.getElementById('invoice-number').value;
+            const clientName = document.getElementById('client-name').value;
+            const clientAddress = document.getElementById('client-address').value;
+            const invoiceDate = document.getElementById('invoice-date').value;
+            const notes = document.getElementById('notes').value;
+
+            // Update preview
+            document.getElementById('preview-invoice-number').textContent = invoiceNumber;
+            document.getElementById('preview-client-name').textContent = clientName;
+            document.getElementById('preview-client-address').textContent = clientAddress;
+            document.getElementById('preview-invoice-date').textContent = invoiceDate;
+            document.getElementById('preview-notes').textContent = notes;
+
+            // Handle items
+            const itemDescriptions = document.querySelectorAll('.item-description');
+            const itemPrices = document.querySelectorAll('.item-price');
+            const itemsContainer = document.getElementById('preview-invoice-items');
+            itemsContainer.innerHTML = ''; // Clear existing items
+
+            let total = 0;
+            for (let i = 0; i < itemDescriptions.length; i++) {
+                const description = itemDescriptions[i].value;
+                const price = parseFloat(itemPrices[i].value);
+                if (description && !isNaN(price)) {
+                    const itemParagraph = document.createElement('p');
+                    itemParagraph.textContent = `${description} - $${price.toFixed(2)}`;
+                    itemsContainer.appendChild(itemParagraph);
+                    total += price;
+                }
+            }
+
+            document.getElementById('preview-total').textContent = '$' + total.toFixed(2);
+        }
+
+        function addItem() {
+            const itemsContainer = document.getElementById('invoice-items');
+            const newItemRow = document.createElement('div');
+            newItemRow.classList.add('item-row');
+
+            const descriptionInput = document.createElement('input');
+            descriptionInput.type = 'text';
+            descriptionInput.classList.add('item-description');
+            descriptionInput.placeholder = 'Description';
+
+            const priceInput = document.createElement('input');
+            priceInput.type = 'number';
+            priceInput.classList.add('item-price');
+            priceInput.placeholder = 'Price';
+
+            newItemRow.appendChild(descriptionInput);
+            newItemRow.appendChild(priceInput);
+            itemsContainer.appendChild(newItemRow);
+        }
+
+        function editInvoice() {
+            alert('Edit functionality not fully implemented. You can modify the input fields directly.');
+            // In a real application, you would load invoice data into the input fields
+        }
+
+        function downloadInvoice() {
+            // Get the invoice preview content
+            const invoiceContent = document.getElementById('invoice-preview').outerHTML;
+
+            // Create a blob from the invoice content
+            const blob = new Blob([invoiceContent], { type: 'text/html' });
+
+            // Create a link element
+            const link = document.createElement('a');
+
+            // Set the link's href to the blob URL
+            link.href = URL.createObjectURL(blob);
+
+            // Set the link's download attribute
+            link.download = 'invoice.html';
+
+            // Append the link to the document
+            document.body.appendChild(link);
+
+            // Click the link to start the download
+            link.click();
+
+            // Remove the link from the document
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
